@@ -1,0 +1,23 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# --- macOS ---
+.DS_Store
+.DS_Store?
+._*
+
+# --- Project Specific ---
+output/               # Don't upload large model weights (.keras files)
+wandb/                # Local logs for Weights & Biases
+*.ipynb_checkpoints   # Jupyter temporary files
+
+# --- IDEs ---
+.vscode/
+.specstory/
+
+# --- Additional Files ---
+test.ipynb
