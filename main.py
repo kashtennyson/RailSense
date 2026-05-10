@@ -49,13 +49,10 @@ def main():
 
     args = parser.parse_args()
 
-    # Apply overrides
-    if args.epochs:
-        config.EPOCHS = args.epochs
-    if args.lr:
-        config.LEARNING_RATE = args.lr
-    if args.batch_size:
-        config.BATCH_SIZE = args.batch_size
+    # Apply overrides if provided
+    config.EPOCHS = args.epochs
+    config.LEARNING_RATE = args.lr
+    config.BATCH_SIZE = args.batch_size
 
     # Print a summary
     print(f"\n--- Pipeline Configuration ---")
