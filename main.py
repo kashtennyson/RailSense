@@ -29,13 +29,22 @@ def main():
 
     # Hyperparameter overrides
     parser.add_argument(
-        "--epochs", type=int, help="Override number of training epochs"
+        "--epochs",
+        type=int,
+        default=config.EPOCHS,
+        help="Override number of training epochs"
         )
     parser.add_argument(
-        "--lr", type=float, help="Override learning rate"
+        "--lr",
+        type=float,
+        default=config.LEARNING_RATE,
+        help="Override learning rate"
         )
     parser.add_argument(
-        "--batch_size", type=int, help="Override batch size"
+        "--batch_size",
+        type=int,
+        default=config.BATCH_SIZE,
+        help="Override batch size"
         )    
 
     args = parser.parse_args()
