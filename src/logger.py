@@ -94,26 +94,26 @@ class ExperimentLogger:
 
 
     @staticmethod
-    def log_evaluation(y_true, y_pred, class_names):
-        """Logs evaluation metrics ONLY if enabled."""
+    def log_production_metrics(metrics_dict):
         if not config.USE_WANDB or not wandb.run:
             return
 
-        # Log interactive confusion matrix
-        wandb.log({
-            "confusion_matrix": wandb.plot.confusion_matrix(
-                y_true=y_true, 
-                preds=y_pred,
-                class_names=class_names
-            )
-        })
+        # Scalars-only dict (safe to log directly)
+        scalar_metrics = {k: v for k, v in metrics_dict.items()
+                        if k not in ("y_true", "y_scores")}
+        wandb.log(scalar_metrics)
 
-        # Log classification report as a table
-        from sklearn.metrics import classification_report
-        report = classification_report(y_true, y_pred, target_names=class_names, output_dict=True)
-        
-        table_data = [[lbl, m['precision'], m['recall']] for lbl, m in report.items() if isinstance(m, dict)]
-        wandb.log({"eval_table": wandb.Table(data=table_data, columns=["class", "precision", "recall"])})
+        if "y_true" in metrics_dict and "y_scores" in metrics_dict:
+            y_true   = np.array(metrics_dict["y_true"],   dtype=int)
+            y_scores = np.array(metrics_dict["y_scores"], dtype=float)
+
+            # Reshape into (n_samples, n_classes) as wandb plot helpers expect
+            y_probs = np.column_stack([1 - y_scores, y_scores])
+
+            wandb.log({
+                "roc_curve": wandb.plot.roc_curve(y_true, y_probs, labels=["normal", "anomaly"]),
+                "pr_curve":  wandb.plot.pr_curve(y_true,  y_probs, labels=["normal", "anomaly"])
+            })
 
 
 

@@ -48,6 +48,42 @@ def generate_heatmap(image, reconstruction):
 
 
 
+def run_latency_benchmark(model, test_ds):
+    """
+    Measures inference time to ensure real-time compatibility.
+    """
+    print("\nRunning Latency Benchmark...")
+    
+    # Optimize by calling the model directly
+    @tf.function(reduce_retracing=True)
+    def model_step(x):
+        return model(x, training=False)
+
+    # For warm up
+    batch = next(iter(test_ds.take(1)))
+    inputs = batch[0]
+    _ = model_step(inputs)
+    
+    start_time = time.perf_counter()
+    total_images = 0
+    iterations = 5
+    
+    for i in range(iterations):
+        for inputs, _, _ in test_ds.take(10):
+            _ = model_step(inputs)
+            total_images += len(inputs)
+    
+    end_time = time.perf_counter()
+    total_time = end_time - start_time
+    fps = total_images / total_time
+    ms_per_image = (total_time / total_images) * 1000
+    
+    print(f"Latency: {ms_per_image:.2f}ms per image")
+    print(f"Throughput: {fps:.2f} FPS (Target: >30 FPS)")
+    return fps, ms_per_image
+
+
+
 def evaluate():
     """
     Evaluates the Autoencoder and detects anomalies.
@@ -66,7 +102,60 @@ def evaluate():
     
     print("Gathering performance metrics...")
     y_true = []
+    y_scores = []
     
+    for images, targets, paths in test_ds:
+        for p in paths.numpy():
+            path_str = p.decode("utf-8").lower()
+            is_anomaly = 1 if "normal" not in path_str else 0
+            y_true.append(is_anomaly)
+        
+        reconstructions = model.predict(images, verbose=0)
+        mse_scores = np.mean(
+                        np.square(targets - reconstructions),
+                        axis=(1, 2, 3)
+                        )
+        y_scores.extend(mse_scores)
+
+    roc_auc = roc_auc_score(y_true, y_scores)
+    avg_precision = average_precision_score(y_true, y_scores)
+    
+    y_pred = [1 if s > threshold else 0 for s in y_scores]
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+    fps, latency_ms = run_latency_benchmark(model, test_ds)
+
+    # Save metadata
+    metadata_path = os.path.join(config.OUTPUT_DIR, "best_model_metadata.json")
+    metadata = {
+        "threshold": float(threshold),
+        "roc_auc": float(roc_auc),
+        "precision": float(precision),
+        "recall": float(recall),
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+    with open(metadata_path, "w") as f:
+        json.dump(metadata, f, indent=4)
+    print(f"Saved model metadata to {metadata_path}")
+
+    print(f"\n--- Production Evaluation ---")
+    print(f"ROC-AUC:         {roc_auc:.4f} (Target: 0.75-0.85)")
+    print(f"Avg Precision:   {avg_precision:.4f}")
+    print(f"Precision:       {precision:.4f} (False Alarm Rate: {1-precision:.4f})")
+    print(f"Recall (Safety): {recall:.4f} (Missed Cracks: {1-recall:.4f})")
+    
+    # Integrate wandb experiment logger if enabled (log metrics)
+    ExperimentLogger.log_production_metrics({
+        "roc_auc": roc_auc,
+        "avg_precision": avg_precision,
+        "precision": precision,
+        "recall": recall,
+        "fps": fps,
+        "latency_ms": latency_ms,
+        "y_true": y_true,
+        "y_scores": y_scores
+    })
+
     # Evaluate on test set
     print("Evaluating on mixed test set...")
     results = []
