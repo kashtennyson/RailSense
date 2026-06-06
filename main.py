@@ -5,9 +5,12 @@ from src import config
 from src.train import train
 from src.evaluate import evaluate
 from src.logger import ExperimentLogger
+from src.inference import run_inference
 
 # Supress info and warning logs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+
 
 def main():
     """
@@ -23,8 +26,8 @@ def main():
     # Primary action
     parser.add_argument(
         "action", 
-        choices=["train", "evaluate", "all"],
-        help="Action to perform: 'train' from scratch, 'evaluate' the best saved model, or 'all' (both)."
+        choices=["train", "evaluate", "predict", "both"],
+        help="Actions to perform: 'train' from scratch, 'evaluate' the best saved model, 'predict' on an image, or 'both' (train and evaluate)."
     )
 
     # Hyperparameter overrides
@@ -45,7 +48,13 @@ def main():
         type=int,
         default=config.BATCH_SIZE,
         help="Override batch size"
-        )    
+        )
+    parser.add_argument(
+        "--image",
+        type=str,
+        default=None,
+        help="Path to image for prediction"
+    )    
 
     args = parser.parse_args()
 
@@ -66,9 +75,17 @@ def main():
     try:
         if args.action == "train":
             train()
+        
         elif args.action == "evaluate":
             evaluate()
-        elif args.action == "all":
+        
+        elif args.action == "predict":
+            if not args.image:
+                print("Error: Please provide an image path using --image")
+                sys.exit(1)
+            run_inference(args.image)
+        
+        elif args.action == "both":
             print("\n--- Starting Full Pipeline ---")
             train()
             print("\n--- Training Complete. Starting Evaluation ---")
@@ -87,6 +104,8 @@ def main():
     
     finally:
         ExperimentLogger.finish()
+
+
 
 if __name__ == "__main__":
     main()
