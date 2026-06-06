@@ -1,2 +1,9 @@
 tensorflow-macos
 tensorflow-metal
+numpy<2.0.0
+pandas
+matplotlib
+seaborn
+scikit-learn
+albumentations
+opencv-python<4.11
