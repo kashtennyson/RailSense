@@ -15,6 +15,6 @@ VAL_RATIO = 0.1
 TEST_RATIO = 0.1
 
 # W&B settings
-WANDB_PROJECT = "Railway-Track-Crack-Detection"
+WANDB_PROJECT = "RailSense"
 WANDB_ENTITY = 'kashtennyson'
 USE_WANDB = True
