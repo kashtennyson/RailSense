@@ -23,9 +23,11 @@ markdowns/
 
 # --- IDEs ---
 .vscode/
-.specstory/
+.claude/
 
 # --- Additional Files ---
 test.ipynb
 .cursorindexingignore
 commit_msg.txt
+dataset-metadata.json
+data/
