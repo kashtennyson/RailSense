@@ -1,3 +1,4 @@
+import subprocess
 import numpy as np
 import tensorflow as tf
 from . import config
@@ -11,6 +12,17 @@ if config.USE_WANDB:
     except ImportError:
         print("Warning: USE_WANDB is True but 'wandb' is not installed. Disabling logging.")
         config.USE_WANDB = False
+
+
+
+def _get_git_commit():
+    """Returns the current git commit hash, or 'unknown' if unavailable."""
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL
+        ).decode().strip()
+    except Exception:
+        return "unknown"
 
 
 
@@ -51,6 +63,10 @@ class ExperimentLogger:
         
         return wandb.init(
             project=config.WANDB_PROJECT,
+            entity=config.WANDB_ENTITY,
+            name=config.RUN_NAME,
+            job_type=config.RUN_JOB_TYPE,
+            tags=config.RUN_TAGS,
             config={
             "learning_rate": config.LEARNING_RATE,
             "epochs": config.EPOCHS,
@@ -59,6 +75,9 @@ class ExperimentLogger:
             "architecture": "ResNet Autoencoder",
             "loss_type": "SSIM + L1",
             "latent_dim": 512,
+            "image_shape": config.IMAGE_SHAPE,
+            "seed": config.SEED,
+            "git_commit": _get_git_commit(),
             "dataset": "data"
             }
         )

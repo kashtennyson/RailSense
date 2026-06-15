@@ -14,7 +14,15 @@ TRAIN_RATIO = 0.8
 VAL_RATIO = 0.1
 TEST_RATIO = 0.1
 
+# Global seed for reproducibility
+SEED = 1337
+
 # W&B settings
 WANDB_PROJECT = "RailSense"
 WANDB_ENTITY = 'kashtennyson'
 USE_WANDB = True
+
+# Experiment tracking / run identity
+RUN_NAME = "baseline-v0"
+RUN_JOB_TYPE = "baseline"
+RUN_TAGS = ["baseline"]

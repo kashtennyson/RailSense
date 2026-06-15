@@ -12,6 +12,21 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 
+def set_global_seeds(seed):
+    """
+    Seeds Python, NumPy, and TensorFlow for reproducible runs.
+    Note: GPU ops may still introduce minor non-determinism.
+    """
+    import random
+    import numpy as np
+    import tensorflow as tf
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+
+
+
 def main():
     """
     Main entry point for the Railway Track Crack Detection System.
@@ -54,7 +69,19 @@ def main():
         type=str,
         default=None,
         help="Path to image for prediction"
-    )    
+    )
+    parser.add_argument(
+        "--run_name",
+        type=str,
+        default=config.RUN_NAME,
+        help="W&B run name (e.g. 'baseline-v0')"
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=config.SEED,
+        help="Global random seed for reproducibility"
+    )
 
     args = parser.parse_args()
 
@@ -62,15 +89,22 @@ def main():
     config.EPOCHS = args.epochs
     config.LEARNING_RATE = args.lr
     config.BATCH_SIZE = args.batch_size
+    config.RUN_NAME = args.run_name
+    config.SEED = args.seed
+
+    # Seed everything for reproducibility
+    set_global_seeds(config.SEED)
 
     # Print a summary
     print(f"\n--- Pipeline Configuration ---")
     print(f"Action:      {args.action.upper()}")
+    print(f"Run Name:    {config.RUN_NAME}")
+    print(f"Seed:        {config.SEED}")
     print(f"Epochs:      {config.EPOCHS}")
     print(f"LR:          {config.LEARNING_RATE}")
     print(f"Batch Size:  {config.BATCH_SIZE}")
     print(f"W&B Logging: {'Enabled' if config.USE_WANDB else 'Disabled'}")
-    print(f"------------------------------\n")        
+    print(f"------------------------------\n")
 
     try:
         if args.action == "train":
