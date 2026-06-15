@@ -1,33 +1,33 @@
-# --- Python ---
-__pycache__/
-*.py[cod]
-*$py.class
-venv/
-.env
-
 # --- macOS ---
+._*
 .DS_Store
 .DS_Store?
-._*
 
-# --- Project Specific ---
+# --- Python ---
+.env
+venv/
+.venv/
+*.py[cod]
+*$py.class
+__pycache__/
 
-# Don't upload large model weights (.keras files)
-output/
-# Local logs for Weights & Biases
-wandb/
-# Temporary project-related markdown files
-markdowns/
-# Jupyter temporary files
+# --- Jupyter ---
 *.ipynb_checkpoints
 
-# --- IDEs ---
-.vscode/
+# --- Cursor ---
 .claude/
+.vscode/
+.cursorindexingignore
+RailSense.code-workspace
+
+# --- Additional Directories ---
+data/
+wandb/
+output/
+markdowns/
 
 # --- Additional Files ---
 test.ipynb
-.cursorindexingignore
 commit_msg.txt
-dataset-metadata.json
-data/
+
+
