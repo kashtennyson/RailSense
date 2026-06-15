@@ -90,7 +90,7 @@ def evaluate():
     """
     
     print("Loading datasets and the model...")
-    _, val_ds, test_ds = load_datasets()
+    _, val_ds, test_ds, _ = load_datasets()
     model_path = os.path.join(config.OUTPUT_DIR, "best_model.keras")
     
     if not os.path.exists(model_path):

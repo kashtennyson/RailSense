@@ -27,7 +27,10 @@ def train():
 
     # Prepare data
     print("Loading datasets...")
-    train_ds, val_ds, _ = load_datasets()
+    train_ds, val_ds, _, stats = load_datasets()
+
+    # Integrate wandb experiment logger if enabled (log dataset stats)
+    ExperimentLogger.log_dataset_stats(stats)
 
     # Build model
     print("Building model...")

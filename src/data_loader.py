@@ -116,4 +116,12 @@ def load_datasets():
     val_ds = create_ds(val_paths, is_training=False, include_paths=False)
     test_ds = create_ds(test_paths, is_training=False, include_paths=True)
 
-    return train_ds, val_ds, test_ds
+    stats = {
+        "n_normal": len(normal_paths),
+        "n_anomaly": len(anomaly_paths),
+        "n_train": len(train_paths),
+        "n_val": len(val_paths),
+        "n_test": len(test_paths),
+    }
+
+    return train_ds, val_ds, test_ds, stats

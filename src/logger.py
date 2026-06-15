@@ -85,6 +85,17 @@ class ExperimentLogger:
 
 
     @staticmethod
+    def log_dataset_stats(stats):
+        """
+        Records dataset composition into the run config for reproducibility.
+        """
+        if not config.USE_WANDB or not wandb.run:
+            return
+        wandb.config.update(stats, allow_val_change=True)
+
+
+
+    @staticmethod
     def get_train_callbacks():
         """Returns W&B callbacks ONLY if enabled, otherwise returns an empty list."""
         if not config.USE_WANDB:
