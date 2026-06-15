@@ -1,0 +1,13 @@
+{
+    "title": "Railway Component Dataset",
+    "id": "kashtennyson/railway-component-dataset",
+    "licenses": [{"name": "CC0-1.0"}],
+    "keywords": ["computer vision", "anomaly detection", "railways", "infrastructure"],
+    "collaborators": [],
+    "data": [
+      {
+        "description": "Railway track component images collected in a controlled proxy environment. Contains four component types (crossties, fasteners, fishplates, tracks) with normal/damaged subdirectories.",
+        "schema": {}
+      }
+    ]
+  }
