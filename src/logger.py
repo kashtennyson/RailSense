@@ -1,7 +1,13 @@
+import os
 import subprocess
+import matplotlib
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 from . import config
+
+# Use aggregation backend
+matplotlib.use("Agg")
 
 
 
@@ -145,6 +151,23 @@ class ExperimentLogger:
                 "pr_curve":  wandb.plot.pr_curve(y_true,  y_probs, labels=["normal", "anomaly"])
             })
 
+            # Overlaid reconstruction-error distributions: the clearest view of separation
+            fig, ax = plt.subplots(figsize=(8, 5))
+            ax.hist(y_scores[y_true == 0], bins=50, alpha=0.6,
+                    label="normal", color="green", density=True)
+            ax.hist(y_scores[y_true == 1], bins=50, alpha=0.6,
+                    label="anomaly", color="red", density=True)
+            threshold = metrics_dict.get("threshold")
+            if threshold is not None:
+                ax.axvline(threshold, color="black", linestyle="--",
+                           label=f"threshold ({threshold:.4f})")
+            ax.set_xlabel("Reconstruction error (MSE)")
+            ax.set_ylabel("Density")
+            ax.set_title("Reconstruction error: normal vs anomaly")
+            ax.legend()
+            wandb.log({"error_histogram": wandb.Image(fig)})
+            plt.close(fig)
+
 
 
     @staticmethod
@@ -153,6 +176,27 @@ class ExperimentLogger:
         Creates and returns an instance of VisualProgress class.
         """
         return ExperimentLogger.VisualProgress(val_ds, log_freq)
+
+
+
+    @staticmethod
+    def upload_eval_artifacts(metadata_path, heatmap_dir):
+        """
+        Uploads evaluation metadata and anomaly heatmaps as a W&B artifact.
+        """
+        if not config.USE_WANDB or not wandb.run:
+            return
+
+        artifact = wandb.Artifact(
+            name=f"eval_{wandb.run.id}",
+            type="evaluation",
+            description="Evaluation metadata (threshold/metrics) and anomaly heatmaps"
+        )
+        if os.path.exists(metadata_path):
+            artifact.add_file(metadata_path)
+        if os.path.isdir(heatmap_dir):
+            artifact.add_dir(heatmap_dir, name="heatmaps")
+        wandb.log_artifact(artifact)
 
 
 

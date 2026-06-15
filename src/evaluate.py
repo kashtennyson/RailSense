@@ -132,6 +132,9 @@ def evaluate():
         "roc_auc": float(roc_auc),
         "precision": float(precision),
         "recall": float(recall),
+        "avg_precision": avg_precision,
+        "fps": fps,
+        "latency_ms": latency_ms,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
     }
     with open(metadata_path, "w") as f:
@@ -152,6 +155,7 @@ def evaluate():
         "recall": recall,
         "fps": fps,
         "latency_ms": latency_ms,
+        "threshold": float(threshold),
         "y_true": y_true,
         "y_scores": y_scores
     })
@@ -202,6 +206,9 @@ def evaluate():
     print(f"Anomalies Flagged: {anomalies_detected}")
     print(f"Detection Rate:    {(anomalies_detected/len(results))*100:.2f}%")
     print(f"Visual evidence saved to: {heatmap_dir}")
+
+    # Integrate wandb experiment logger if enabled (Upload metadata + heatmaps)
+    ExperimentLogger.upload_eval_artifacts(metadata_path, heatmap_dir)
 
 
 
