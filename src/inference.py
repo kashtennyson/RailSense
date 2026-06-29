@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from . import config
+from .scoring import compute_error_maps, score_from_error_maps
 
 
 
@@ -17,7 +18,9 @@ class AnomalyPredictor:
             
         self.model = tf.keras.models.load_model(model_path, compile=False)
         self.threshold = 0.005
-        
+        self.score_method = config.SCORE_METHOD
+        self.topk_percent = config.TOPK_PERCENT
+
         # Load threshold from metadata if available
         metadata_path = os.path.join(config.OUTPUT_DIR, "best_model_metadata.json")
         if os.path.exists(metadata_path):
@@ -25,7 +28,9 @@ class AnomalyPredictor:
                 with open(metadata_path, "r") as f:
                     metadata = json.load(f)
                     self.threshold = metadata.get("threshold", self.threshold)
-                print(f"Loaded threshold {self.threshold:.6f} from {metadata_path}")
+                    self.score_method = metadata.get("score_method", self.score_method)
+                    self.topk_percent = metadata.get("topk_percent", self.topk_percent)
+                print(f"Loaded threshold {self.threshold:.6f} (method '{self.score_method}') from {metadata_path}")
             except Exception as e:
                 print(f"Warning: Could not load metadata, using default threshold. Error: {e}")
         else:
@@ -41,8 +46,13 @@ class AnomalyPredictor:
     def predict(self, image_path, save_heatmap=True):
         input_tensor = self.preprocess(image_path)
         reconstruction = self.model.predict(input_tensor, verbose=0)
-        
-        mse_score = np.mean(np.square(input_tensor[0] - reconstruction[0]))
+
+        error_map = compute_error_maps(input_tensor[0], reconstruction[0])
+        mse_score = float(score_from_error_maps(
+            error_map,
+            method=self.score_method,
+            topk_percent=self.topk_percent
+        ))
         is_anomaly = mse_score > self.threshold
         confidence = 1.0 / (1.0 + np.exp(-(mse_score - self.threshold) / (self.threshold * 0.1)))
 
@@ -55,9 +65,7 @@ class AnomalyPredictor:
         }
 
         if save_heatmap:
-            diff = np.abs(input_tensor[0] - reconstruction[0])
-            heatmap = np.mean(diff, axis=-1)
-            
+            heatmap = error_map
             output_path = os.path.join(config.OUTPUT_DIR, "latest_prediction.png")
             plt.figure(figsize=(10, 5))
             plt.subplot(1, 2, 1)

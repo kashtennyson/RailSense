@@ -10,6 +10,7 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 from . import config
 from .logger import ExperimentLogger
 from .data_loader import load_datasets
+from .scoring import anomaly_scores
 
 
 
@@ -23,10 +24,7 @@ def calculate_anomaly_threshold(model, val_ds):
 
     for inputs, targets in val_ds:
         reconstructions = model.predict(inputs, verbose=0)
-        batch_errors = np.mean(
-                            np.square(targets - reconstructions),
-                            axis=(1, 2, 3)
-                            )
+        batch_errors = anomaly_scores(targets, reconstructions)
         errors.extend(batch_errors)
 
     mean_err = np.mean(errors)
@@ -111,10 +109,7 @@ def evaluate():
             y_true.append(is_anomaly)
         
         reconstructions = model.predict(images, verbose=0)
-        mse_scores = np.mean(
-                        np.square(targets - reconstructions),
-                        axis=(1, 2, 3)
-                        )
+        mse_scores = anomaly_scores(targets, reconstructions)
         y_scores.extend(mse_scores)
 
     roc_auc = roc_auc_score(y_true, y_scores)
@@ -129,6 +124,8 @@ def evaluate():
     metadata_path = os.path.join(config.OUTPUT_DIR, "best_model_metadata.json")
     metadata = {
         "threshold": float(threshold),
+        "score_method": config.SCORE_METHOD,
+        "topk_percent": config.TOPK_PERCENT,
         "roc_auc": float(roc_auc),
         "precision": float(precision),
         "recall": float(recall),
@@ -171,11 +168,8 @@ def evaluate():
     sample_count = 0
     for inputs, targets, paths in test_ds:
         reconstructions = model.predict(inputs, verbose=0)
-        mse_scores = np.mean(
-                        np.square(targets - reconstructions),
-                        axis=(1, 2, 3)
-                        )
-        
+        mse_scores = anomaly_scores(targets, reconstructions)
+
         for i in range(len(inputs)):
             score = mse_scores[i]
             is_anomaly = score > threshold

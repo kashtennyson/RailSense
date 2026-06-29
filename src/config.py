@@ -14,13 +14,17 @@ TRAIN_RATIO = 0.8
 VAL_RATIO = 0.1
 TEST_RATIO = 0.1
 
+# Anomaly scoring
+SCORE_METHOD = "topk"
+TOPK_PERCENT = 0.01
+
 # Global seed for reproducibility
 SEED = 1337
 
 # W&B settings
 WANDB_PROJECT = "RailSense"
 WANDB_ENTITY = 'kashtennyson'
-USE_WANDB = True
+USE_WANDB = False
 
 # Experiment tracking / run identity
 RUN_NAME = "baseline-v0"

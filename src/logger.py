@@ -81,6 +81,8 @@ class ExperimentLogger:
             "architecture": "ResNet Autoencoder",
             "loss_type": "SSIM + L1",
             "latent_dim": 512,
+            "score_method": config.SCORE_METHOD,
+            "topk_percent": config.TOPK_PERCENT,
             "image_shape": config.IMAGE_SHAPE,
             "seed": config.SEED,
             "git_commit": _get_git_commit(),
