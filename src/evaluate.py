@@ -6,6 +6,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from sklearn.metrics import precision_score, recall_score
 from sklearn.metrics import roc_auc_score, average_precision_score
+from sklearn.metrics import precision_recall_curve
 
 from . import config
 from .logger import ExperimentLogger
@@ -130,7 +131,14 @@ def evaluate():
 
     roc_auc = roc_auc_score(y_true, y_scores)
     avg_precision = average_precision_score(y_true, y_scores)
-    
+
+    prevalence = float(np.mean(y_true))
+    ap_lift = float(avg_precision - prevalence)
+
+    prec_curve, rec_curve, _ = precision_recall_curve(y_true, y_scores)
+    feasible = prec_curve >= 0.90
+    recall_at_p90 = float(np.max(rec_curve[feasible])) if np.any(feasible) else 0.0
+
     y_pred = [1 if s > threshold else 0 for s in y_scores]
     precision = precision_score(y_true, y_pred)
     recall = recall_score(y_true, y_pred)
@@ -146,6 +154,9 @@ def evaluate():
         "precision": float(precision),
         "recall": float(recall),
         "avg_precision": avg_precision,
+        "prevalence": prevalence,
+        "ap_lift": ap_lift,
+        "recall_at_p90": recall_at_p90,
         "fps": fps,
         "latency_ms": latency_ms,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
@@ -156,14 +167,19 @@ def evaluate():
 
     print(f"\n--- Production Evaluation ---")
     print(f"ROC-AUC:         {roc_auc:.4f} (Target: 0.75-0.85)")
-    print(f"Avg Precision:   {avg_precision:.4f}")
+    print(f"Avg Precision:   {avg_precision:.4f} (Prevalence floor: {prevalence:.4f})")
+    print(f"AP Lift:         {ap_lift:+.4f} (AP - prevalence; >0 beats chance)")
+    print(f"Recall @ P90:    {recall_at_p90:.4f} (max recall while precision >= 0.90)")
     print(f"Precision:       {precision:.4f} (False Alarm Rate: {1-precision:.4f})")
     print(f"Recall (Safety): {recall:.4f} (Missed Cracks: {1-recall:.4f})")
-    
+
     # Integrate wandb experiment logger if enabled (log metrics)
     ExperimentLogger.log_production_metrics({
         "roc_auc": roc_auc,
         "avg_precision": avg_precision,
+        "prevalence": prevalence,
+        "ap_lift": ap_lift,
+        "recall_at_p90": recall_at_p90,
         "precision": precision,
         "recall": recall,
         "fps": fps,
