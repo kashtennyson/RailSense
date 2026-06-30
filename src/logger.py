@@ -139,6 +139,28 @@ class ExperimentLogger:
 
 
     @staticmethod
+    def use_model_artifact(artifact_ref, download_dir=None, file_name="best_model.keras"):
+        """
+        Records a model artifact as an INPUT to the current run, so W&B draws the lineage edge (training run -> model artifact -> this evaluation run), and downloads it. 
+        
+        Returns the local path to the checkpoint, or None if W&B is disabled, no run is active, or no reference was given.
+        """
+        if not config.USE_WANDB or not wandb.run or not artifact_ref:
+            return None
+
+        print(f"Linking model artifact for lineage: {artifact_ref}")
+        artifact = wandb.run.use_artifact(artifact_ref, type="model")
+        artifact_dir = artifact.download(root=download_dir)
+        file_path = os.path.join(artifact_dir, file_name)
+
+        if not os.path.exists(file_path):
+            print(f"Warning: '{file_name}' not found in artifact {artifact_ref}.")
+            return None
+        return file_path
+
+
+
+    @staticmethod
     def log_production_metrics(metrics_dict):
         if not config.USE_WANDB or not wandb.run:
             return

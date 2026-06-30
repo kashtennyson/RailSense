@@ -91,8 +91,9 @@ def evaluate():
     _, val_ds, test_ds, _ = load_datasets()
     model_path = os.path.join(config.OUTPUT_DIR, "best_model.keras")
 
-    if not os.path.exists(model_path):
-        print(f"Error: Model not found at {model_path}. Train the model first.")
+    if not config.MODEL_ARTIFACT and not os.path.exists(model_path):
+        print(f"Error: Model not found at {model_path}. Train the model first "
+              f"or set config.MODEL_ARTIFACT.")
         return
 
     ExperimentLogger.init(
@@ -100,6 +101,15 @@ def evaluate():
         name=f"{config.RUN_NAME}-eval",
         tags=list(config.RUN_TAGS) + ["evaluate"],
     )
+
+    # Link the model artifact as a run input and fetch its checkpoint.
+    fetched_path = ExperimentLogger.use_model_artifact(config.MODEL_ARTIFACT, config.OUTPUT_DIR)
+    if fetched_path:
+        model_path = fetched_path
+
+    if not os.path.exists(model_path):
+        print(f"Error: Model not found at {model_path}. Train the model first.")
+        return
 
     model = tf.keras.models.load_model(model_path, compile=False)
     threshold = calculate_anomaly_threshold(model, val_ds)

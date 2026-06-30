@@ -30,3 +30,7 @@ USE_WANDB = False
 RUN_NAME = "baseline-v0"
 RUN_JOB_TYPE = "baseline"
 RUN_TAGS = ["baseline"]
+
+# Model artifact to evaluate
+# (e.g. - "kashtennyson/RailSense/model_<run_id>:latest")
+MODEL_ARTIFACT = "kashtennyson/RailSense/model_bfw3d4u6:v0"
