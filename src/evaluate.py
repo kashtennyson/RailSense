@@ -90,10 +90,16 @@ def evaluate():
     print("Loading datasets and the model...")
     _, val_ds, test_ds, _ = load_datasets()
     model_path = os.path.join(config.OUTPUT_DIR, "best_model.keras")
-    
+
     if not os.path.exists(model_path):
         print(f"Error: Model not found at {model_path}. Train the model first.")
         return
+
+    ExperimentLogger.init(
+        job_type="evaluate",
+        name=f"{config.RUN_NAME}-eval",
+        tags=list(config.RUN_TAGS) + ["evaluate"],
+    )
 
     model = tf.keras.models.load_model(model_path, compile=False)
     threshold = calculate_anomaly_threshold(model, val_ds)

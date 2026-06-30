@@ -61,18 +61,25 @@ class ExperimentLogger:
 
 
     @staticmethod
-    def init():
-        """Starts a new experiment run if enabled."""
+    def init(job_type=None, name=None, tags=None):
+        """
+        Starts a new experiment run if enabled.
+
+        The job_type/name/tags overrides let evaluate() open a standalone 'evaluate' run when scoring a previously trained model. However, if a run is already active then the existing run is reused. 
+        """
         if not config.USE_WANDB:
             print("Running in OFFLINE mode (W&B disabled).")
             return None
-        
+
+        if wandb.run is not None:
+            return wandb.run
+
         return wandb.init(
             project=config.WANDB_PROJECT,
             entity=config.WANDB_ENTITY,
-            name=config.RUN_NAME,
-            job_type=config.RUN_JOB_TYPE,
-            tags=config.RUN_TAGS,
+            name=name or config.RUN_NAME,
+            job_type=job_type or config.RUN_JOB_TYPE,
+            tags=tags or config.RUN_TAGS,
             config={
             "learning_rate": config.LEARNING_RATE,
             "epochs": config.EPOCHS,
