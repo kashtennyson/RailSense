@@ -11,13 +11,12 @@ matplotlib.use("Agg")
 
 
 
-if config.USE_WANDB:
-    try:
-        import wandb
-        from wandb.integration.keras import WandbMetricsLogger
-    except ImportError:
-        print("Warning: USE_WANDB is True but 'wandb' is not installed. Disabling logging.")
-        config.USE_WANDB = False
+try:
+    import wandb
+    from wandb.integration.keras import WandbMetricsLogger
+    _WANDB_INSTALLED = True
+except ImportError:
+    _WANDB_INSTALLED = False
 
 
 
@@ -67,6 +66,10 @@ class ExperimentLogger:
 
         The job_type/name/tags overrides let evaluate() open a standalone 'evaluate' run when scoring a previously trained model. However, if a run is already active then the existing run is reused. 
         """
+        if config.USE_WANDB and not _WANDB_INSTALLED:
+            print("Warning: W&B logging requested but 'wandb' is not installed. Disabling logging.")
+            config.USE_WANDB = False
+
         if not config.USE_WANDB:
             print("Running in OFFLINE mode (W&B disabled).")
             return None

@@ -82,6 +82,12 @@ def main():
         default=config.SEED,
         help="Global random seed for reproducibility"
     )
+    parser.add_argument(
+        "--wandb",
+        action=argparse.BooleanOptionalAction,
+        default=config.USE_WANDB,
+        help="Enable/disable Weights & Biases logging (use --no-wandb to disable)"
+    )
 
     args = parser.parse_args()
 
@@ -91,6 +97,7 @@ def main():
     config.BATCH_SIZE = args.batch_size
     config.RUN_NAME = args.run_name
     config.SEED = args.seed
+    config.USE_WANDB = args.wandb
 
     # Seed everything for reproducibility
     set_global_seeds(config.SEED)
