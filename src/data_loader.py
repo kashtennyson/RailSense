@@ -82,7 +82,7 @@ def load_datasets():
     print(f"Found {len(normal_paths)} normal images and {len(anomaly_paths)} anomaly images.")
 
     # Split normal data for train/val/test
-    np.random.seed(1337)
+    np.random.seed(config.SEED)
     np.random.shuffle(normal_paths)
     
     n_total = len(normal_paths)

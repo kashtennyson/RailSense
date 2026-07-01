@@ -10,6 +10,12 @@ EPOCHS = 50
 WEIGHT_DECAY = 0.001
 LEARNING_RATE = 0.0001
 
+# Model architecture
+LATENT_DIM = 512
+
+# Reconstruction loss
+LOSS_ALPHA = 0.8
+
 TRAIN_RATIO = 0.8
 VAL_RATIO = 0.1
 TEST_RATIO = 0.1
@@ -33,4 +39,4 @@ RUN_TAGS = ["baseline"]
 
 # Model artifact to evaluate
 # (e.g. - "kashtennyson/RailSense/model_<run_id>:latest")
-MODEL_ARTIFACT = "kashtennyson/RailSense/model_bfw3d4u6:v0"
+MODEL_ARTIFACT = ""

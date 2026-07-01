@@ -7,7 +7,7 @@ from . import config
 class RailwayAutoencoder:
     def __init__(self):
         self.input_shape = config.IMAGE_SHAPE + (3,)
-        self.latent_dim = 512
+        self.latent_dim = config.LATENT_DIM
 
     def build_encoder(self):
         """

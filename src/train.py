@@ -13,7 +13,7 @@ def structural_loss(y_true, y_pred):
     Hybrid loss: Alpha * (1 - SSIM) + (1 - Alpha) * L1
     Focuses on structural integrity over raw pixel values.
     """
-    alpha = 0.8
+    alpha = config.LOSS_ALPHA
     ssim_loss = 1 - tf.reduce_mean(tf.image.ssim(y_true, y_pred, max_val=1.0))
     l1_loss = tf.reduce_mean(tf.abs(y_true - y_pred))
     

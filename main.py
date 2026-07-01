@@ -88,6 +88,12 @@ def main():
         default=config.USE_WANDB,
         help="Enable/disable Weights & Biases logging (use --no-wandb to disable)"
     )
+    parser.add_argument(
+        "--model_artifact",
+        type=str,
+        default=config.MODEL_ARTIFACT,
+        help="W&B model artifact to evaluate (empty = use local output/best_model.keras)"
+    )
 
     args = parser.parse_args()
 
@@ -98,6 +104,7 @@ def main():
     config.RUN_NAME = args.run_name
     config.SEED = args.seed
     config.USE_WANDB = args.wandb
+    config.MODEL_ARTIFACT = args.model_artifact
 
     # Seed everything for reproducibility
     set_global_seeds(config.SEED)
